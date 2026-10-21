@@ -70,6 +70,7 @@ export class EngineSim {
   dynoActive = false;
   dynoSweepRpm = 1000;
   dynoData: DynoRun | null = null;
+  private savedThrottle = 0;
   private dynoSamples: { rpm: number[]; tq: number[]; pin: number[]; pex: number[] } = { rpm: [], tq: [], pin: [], pex: [] };
   private lastSampleRpm = 0;
 
@@ -172,6 +173,7 @@ export class EngineSim {
 
   // ── dyno ───────────────────────────────────────────────────────────────────
   startDyno() {
+    this.savedThrottle = this.throttleTarget;
     this.dynoActive = true;
     this.dynoSweepRpm = Math.max(800, this.rpm, 900);
     this.dynoSamples = { rpm: [], tq: [], pin: [], pex: [] };
@@ -184,6 +186,7 @@ export class EngineSim {
   stopDyno(save = true) {
     if (!this.dynoActive) return;
     this.dynoActive = false;
+    this.throttleTarget = this.savedThrottle;
     if (save && this.dynoSamples.rpm.length > 5) {
       const { rpm, tq } = this.dynoSamples;
       const power = rpm.map((r, i) => (tq[i] * r) / 9549); // kW
@@ -249,9 +252,9 @@ export class EngineSim {
       this.clutchSync = 0;
     }
 
-    // starter motor
+    // starter motor — must haul the crank past the combustion gate (~320 rpm)
     if (this.cranking && !this.running) {
-      this.rpm += (420 - this.rpm) * clamp(dt * 3.2, 0, 1);
+      this.rpm += (520 - this.rpm) * clamp(dt * 4.2, 0, 1);
     }
 
     // manifold load model
@@ -293,11 +296,11 @@ export class EngineSim {
     let tq = Math.max(0.01, bmep * 1e5) * (s.displacementL / 1000) / (4 * Math.PI);
     tq *= 0.45 + 0.55 * this.health / 100;
     tq *= (0.25 + 0.75 * activeFrac) * (this.limiting ? 0.3 : 1);
-    if (!this.ignitionOn || this.rpm < 380) tq = 0;
+    if (!this.ignitionOn || this.rpm < 320) tq = 0;
     else tq *= clamp(this.throttlePos * 1.6 + 0.05, 0, 1.15); // part-throttle fill
 
-    // idle regulation governor
-    if (this.ignitionOn && this.throttlePos < 0.06 && this.rpm > 200) {
+    // idle regulation governor (also the spark-assist that lets the starter catch)
+    if (this.ignitionOn && this.rpm > 150 && (this.throttlePos < 0.06 || this.cranking)) {
       tq += 24 * clamp((s.idleRpm - this.rpm) / 260, -1, 1);
     }
     this.torque = tq;
