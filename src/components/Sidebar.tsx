@@ -42,7 +42,10 @@ export function Sidebar() {
           <div
             key={l.id}
             className={`side-item ${layout === l.id ? 'active' : ''}`}
-            onClick={() => setLayout(l.id)}
+            onClick={() => {
+              setLayout(l.id);
+              document.querySelector('.app')?.classList.remove('drawer-open');
+            }}
           >
             <span className="dot" />
             {l.label}
@@ -52,7 +55,10 @@ export function Sidebar() {
 
       <div className="side-engines">
         <div className="side-section">ENGINES</div>
-        <button className="build-btn" onClick={() => openBuilder(null)}>
+        <button className="build-btn" onClick={() => {
+          openBuilder(null);
+          document.querySelector('.app')?.classList.remove('drawer-open');
+        }}>
           <BuildIcon />
           Build New Engine
         </button>
@@ -65,7 +71,11 @@ export function Sidebar() {
               <div
                 key={e.id}
                 className={`side-item engine-item ${selectedId === e.id ? 'active' : ''} ${locked ? 'locked' : ''}`}
-                onClick={() => (locked ? setShowroom(true) : selectEngine(e.id))}
+                onClick={() => {
+                  if (locked) setShowroom(true);
+                  else selectEngine(e.id);
+                  document.querySelector('.app')?.classList.remove('drawer-open');
+                }}
                 title={locked ? `Unlock in showroom for ${preset?.def.unlockCost ?? 0} coins` : preset?.def.blurb ?? e.config.description}
               >
                 <div className="row1">

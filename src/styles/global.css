@@ -418,6 +418,7 @@ canvas.engine3d:active { cursor: grabbing; }
   width: 8px; height: 8px; border-radius: 50%; background: #3a3a42;
   transition: all 0.15s;
 }
+.pwr-switch:disabled { opacity: 0.4; cursor: not-allowed; }
 .pwr-switch.on { color: var(--text); }
 .pwr-switch.on .status-dot { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
 .pwr-switch.on .state-on { color: var(--blue); }

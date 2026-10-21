@@ -78,10 +78,15 @@ export function TopBar() {
         <button
           className={`tb-btn ${collapsed ? '' : 'ign-on'}`}
           onClick={() => {
-            const c = !collapsed;
-            setCollapsed(c);
-            document.querySelector('.app')?.classList.toggle('panel-collapsed', c);
-            document.querySelector('.app')?.classList.toggle('drawer-open', !c);
+            const app = document.querySelector('.app');
+            if (!app) return;
+            if (window.matchMedia('(max-width: 900px)').matches) {
+              app.classList.toggle('drawer-open');
+            } else {
+              const c = !collapsed;
+              setCollapsed(c);
+              app.classList.toggle('panel-collapsed', c);
+            }
           }}
           title="Toggle panel"
         >
